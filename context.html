@@ -1,0 +1,674 @@
+﻿
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>计时零售系统</title>
+    <link href="./myStyle.css" rel='stylesheet' type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+</head>
+
+<body>
+    <div class="body">
+        <div class="left">
+            <div>
+                <h1 id="bigTitle"></h1>
+                <button id="start" onclick="start()">开始计时</button>
+                <div style="display: none;" id="end">
+                    <!-- <button onclick="end(localStorage['startTime' + idIdx])">结束计时</button> -->
+                    <button onclick="end(localStorage.getItem('startTime' + idIdx))">结束计时</button>
+                    <button onclick="showMoney(localStorage['startTime' + idIdx])">查看费用</button>
+                    <button onclick="moling(localStorage['startTime' + idIdx])">抹零结账</button>
+                    <button onclick="shanchu(localStorage['startTime' + idIdx])">删除商品</button>
+                    <!-- <button onclick="exportData()">导出数据</button> -->
+                    <div>
+                        <span>开始时间：</span>
+                        <span id="startTime"></span>
+                    </div>
+                    <div>
+                        <span>耗&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;时：</span>
+                        <span id="subTime"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: none;" id="food">
+                <hr />
+                <h2>烟</h2>
+                <button onclick="buy('黑利群')">黑利群40</button>
+                <button onclick="buy('黑贵')">黑贵25</button>
+                <button onclick="buy('云烟')">云烟25</button>
+                <button onclick="buy('口味王50')">口味王50</button>
+                <button onclick="buy('口味王30')">口味王30</button>
+                <button onclick="buy('口味王100')">口味王100</button>
+                <button onclick="buy('去掉房间费')">去掉房间费-10</button>
+                <hr />
+                <h2>饮料</h2>
+                <button onclick="buy('东方树叶')">东方树叶5</button>
+                <button onclick="buy('脉动')">脉动5</button>
+                <button onclick="buy('尖叫')">尖叫5</button>
+                <button onclick="buy('怡宝')">怡宝2</button>
+                <button onclick="buy('茉莉茶')">茉莉茶3</button>
+                <button onclick="buy('红牛')">红牛7</button>
+                <button onclick="buy('无糖可乐')">无糖可乐3</button>
+                <hr />
+                <h2>茶水</h2>
+                <button onclick="buy('红茶')">红茶</button>
+                <button onclick="buy('毛尖')">毛尖</button>
+                <button onclick="buy('龙井')">龙井</button>
+                <button onclick="buy('小青柑')">小青柑</button>
+                <button onclick="buy('菊花茶')">菊花茶</button>
+                <hr />
+                <h2>零食</h2>
+                <button onclick="buy('乐吧')">乐吧2</button>
+                <button onclick="buy('鸡脖')">鸡脖3</button>
+                <button onclick="buy('鸡蛋')">鸡蛋2</button>
+                <button onclick="buy('南瓜酥')">南瓜酥2</button>
+                <button onclick="buy('鹌鹑蛋')">鹌鹑蛋2</button>
+                <button onclick="buy('脆脆鲨')">脆脆鲨2</button>
+                <button onclick="buy('小小酥')">小小酥4</button>
+                <button onclick="buy('士力架')">士力架3</button>
+                <button onclick="buy('劲仔')">劲仔1</button>
+                <button onclick="buy('辣条')">辣条2</button>
+                <button onclick="buy('卫龙')">卫龙1</button>
+                <button onclick="buy('方便面')">方便面2</button>
+
+                <hr />
+            </div>
+        </div>
+
+        <div class="right" id="foodIsBuy">
+            <div>
+                <h2>已购买的商品:</h2>
+            </div>
+            <div id="notHaveBuyList">暂无</div>
+            <div class="food-list" style="display: none;" id="hasBuyList"></div>
+        </div>
+    </div>
+
+    <script>
+        // 获取查询参数
+        function getQueryVariable(variable) {
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i = 0; i < vars.length; i++) {
+                var pair = vars[i].split("=");
+                if (pair[0] == variable) {
+                    return pair[1];
+                }
+            }
+            return false;
+        }
+        var idIdx = getQueryVariable("id");
+        var roomName = ['东', '南', '西', '北', '中', '发', '白','临时'];
+        var roomId = parseInt(idIdx) - 1;
+        var roomNameById = roomName[roomId]; // 获取房间名
+        // document.querySelector('#bigTitle').innerHTML = '房间' + '【' + roomName[roomId] + '】';
+        document.querySelector('#bigTitle').innerHTML = '房间' + '【' + roomNameById + '】'; // 页面显示房间名
+
+        // 设置初始的总价格
+        var priceSum = 0;
+
+        // 设置商品的价格列表
+        var priceList = [{
+        food: '黑利群',
+        price: 40
+    }, {
+        food: '芙蓉王',
+        price: 28
+    }, {
+        food: '黑贵',
+        price: 25
+    }, {
+        food: '云烟',
+        price: 25
+    }, {
+        food: '东方树叶',
+        price: 5
+    }, {
+        food: '脉动',
+        price: 5
+    }, {
+        food: '尖叫',
+        price: 5
+    }, {
+        food: '怡宝',
+        price: 2
+    }, {
+        food: '茉莉茶',
+        price: 3
+    }, {
+        food: '绿茶',
+        price: 3
+    }, {
+        food: '红牛',
+        price: 7
+    }, {
+        food: '无糖可乐',
+        price: 3
+    }, {
+        food: '口味王50',
+        price: 50
+    }, {
+        food: '口味王30',
+        price: 30
+    }, {
+        food: '口味王100',
+        price: 100
+    }, {
+        food: '乐吧',
+        price: 2
+    }, {
+        food: '鸡脖',
+        price: 3
+    }, {
+        food: '鸡蛋',
+        price: 2
+    }, {
+        food: '南瓜酥',
+        price: 2
+    }, {
+        food: '鹌鹑蛋',
+        price: 2
+    }, {
+        food: '脆脆鲨',
+        price: 2
+    }, {
+        food: '小小酥',
+        price: 4
+    }, {
+        food: '士力架',
+        price: 3
+    }, {
+        food: '劲仔',
+        price: 1
+    }, {
+        food: '辣条',
+        price: 2
+    }, {
+        food: '卫龙',
+        price: 1
+    }, {
+        food: '香肠',
+        price: 2
+    }, {
+        food: '红茶',
+        price: 38
+    }, {
+        food: '毛尖',
+        price: 38
+    }, {
+        food: '龙井',
+        price: 38
+    }, {
+        food: '小青柑',
+        price: 38
+    }, {
+        food: '方便面',
+        price: 2
+    },    {
+        food: '菊花茶',
+        price: 28
+    } ,   {
+        food: '去掉房间费',
+        price: -10
+    }
+        ];
+
+        // 获取商品的价格
+        function getPriceByFoodName(foodName) {
+            return priceList.find(value => value.food === foodName).price;
+        }
+
+        function domEle(ele, value) {
+            document.querySelector(ele).style.display = value;
+        }
+
+        function setHtml(value) {
+            if (value) {
+                domEle('#hasBuyList', 'grid');
+                domEle('#notHaveBuyList', 'none');
+                var showFoodList = JSON.parse(value);
+                var showFoodListDomEle = '';
+                for (var i = 0; i < showFoodList.length; i++) {
+                    var foodName = showFoodList[i].food;
+                    var price = showFoodList[i].price;
+                    var number = showFoodList[i].number;
+                    showFoodListDomEle += `
+                    <div class="item">
+                        <div>
+                            <span>名称</span>
+                            <span>:</span>
+                            <span id="foodName">${foodName}</span>
+                        </div>
+                        <div>
+                            <span>单价</span>
+                            <span>:</span>
+                            <span id="foodPrice">${price}</span>
+                        </div>
+                        <div>
+                            <span>数量</span>
+                            <span>:</span>
+                            <span id="foodNumber">${number}</span>
+                        </div>
+                    </div>
+                    `;
+                }
+                document.querySelector('#hasBuyList').innerHTML = showFoodListDomEle;
+            } else {
+                document.querySelector('#hasBuyList').innerHTML = '';
+                domEle('#hasBuyList', 'none');
+                domEle('#notHaveBuyList', 'block');
+            }
+        }
+
+        setHtml(localStorage['buyFood' + idIdx]);
+
+        // 设置购买商品的值
+        function setBuyFoodValueInLocalStorage(value) {
+            localStorage.setItem('buyFood' + idIdx, value);
+            console.log('Data to save:', value); // 添加这行代码来检查数据
+            setHtml(value);
+        // saveDataToFile(value, 'buyFood' + idIdx + '.json');
+        }
+
+
+        // 固定的localStorage键名
+        const STORAGE_KEY = 'allCheckoutData';
+
+    //     // 保存数据到localStorage的函数
+    //     function saveDataToFile(data) {
+    //         // 从localStorage获取现有数据
+    //         let existingData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            
+    //         // 将新数据追加到现有数据数组中
+    //         // existingData.push(data);
+    //         existingData.push({
+    //     ...data, // 展开运算符，包含原有数据属性
+    //     roomName: roomNameById // 添加房间名
+    // });
+            
+    //         // 更新localStorage
+    //         localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
+            
+    //         console.log('Data appended to localStorage:', existingData);
+    //     }
+
+        function saveDataToFile(data) {
+    // 假设有一个全局数组来存储所有结账数据
+    var allCheckoutData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    allCheckoutData.push({
+        ...data, // 包含原有数据属性
+        roomName: roomNameById // 添加房间名
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(allCheckoutData));
+}
+
+        // // 导出数据为JSON文件的函数
+        // window.exportData = function() {
+        //     // 获取localStorage中存储的所有数据
+        //     const allData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        //     // 创建一个新的Blob对象，包含所有数据
+        //     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+        //     // 使用FileSaver.js保存文件
+        //     saveAs(blob, 'allCheckoutData.json');
+        //     }
+
+        // // 保存数据到文件
+        // function saveDataToFile(data, filename) {
+        //     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        //     saveAs(blob, filename); // 使用FileSaver.js提供的方法保存文件
+        // }
+
+        // 页面刷新时判断是否有缓存内容
+        if (localStorage['startTime' + idIdx]) {
+            domEle('#end', 'block');
+            domEle('#start', 'none');
+            domEle('#food', 'block');
+            domEle('#foodIsBuy', 'block');
+            showSubTime(localStorage['startTime' + idIdx]);
+            getSubTime();
+        }
+
+        // 查看耗时
+        function getSubTime() {
+            setInterval(() => { // 实时刷新
+                if (localStorage['startTime' + idIdx]) {
+                    document.querySelector('#subTime').innerHTML = haoShi();
+                }
+            }, 1000);
+        }
+
+        // 计算所耗时间
+        function haoShi() {
+            var d = parseInt(localStorage['startTime' + idIdx]);
+            var currentTime = +new Date();
+            var subTime = currentTime - d;
+            subTime = Math.floor(subTime / 1000);
+            var h = Math.floor(subTime / 3600);
+            var m = Math.floor((subTime % 3600) / 60);
+            var s = subTime % 60;
+            return `${h}小时${m}分${s}秒`;
+        }
+
+        // 显示开始时间
+        function showSubTime(qq) {
+            if (qq) {
+                var times = riqi(parseInt(qq));
+                document.querySelector('#startTime').innerHTML = times;
+            }
+            
+        }
+
+        // 输出当前年月日
+        function riqi(a) {
+            var date = new Date(a);
+            var year = date.getFullYear();
+            var month = (date.getMonth() + 1).toString().padStart(2, '0');
+            var dateTime = date.getDate().toString().padStart(2, '0');
+            var h = date.getHours().toString().padStart(2, '0');
+            var m = date.getMinutes().toString().padStart(2, '0');
+            var s = date.getSeconds().toString().padStart(2, '0');
+            return `${year}年${month}月${dateTime}号   ${h}:${m}:${s}`;
+        }
+
+
+
+    //开始计时按钮
+    function start() {
+        var d = +new Date()
+        localStorage['startTime' + idIdx] = d;
+        domEle('#end', 'block')
+        domEle('#start', 'none')
+        domEle('#food', 'block')
+        domEle('#foodIsBuy', 'block')
+        showSubTime(localStorage['startTime' + idIdx])
+        getSubTime()
+        return d
+        var roomId = this.document.body.id; // 假设每个context.html的body有一个唯一的id
+        window.parent.postMessage({ action: 'highlight', id: idIdx }, '*');
+    }
+
+// 结束计时按钮的逻辑
+function end(start) {
+    // 计算结束时间、使用时长和费用
+    var startTime = localStorage.getItem('startTime' + idIdx);
+    var endDate = +new Date();
+    var sub = endDate - startTime; // 使用startTime作为开始时间
+
+    sub = Math.floor(sub / 1000); // 把得出来的毫秒转为秒
+
+    var subSumPrice = 10; // 默认单价是60元/60分钟
+    if (sub > 3600 && sub <= 21600) {
+        var hour = Math.ceil((sub - 3600) / 3600); // 判断超出4小时多久，默认按小时收费
+        subSumPrice += hour * 10; // 每超过1小时，加收10块钱
+    } else if (sub > 21600) {
+        var hour = 5; // 最长6小时，相当于最长加5小时
+        subSumPrice += hour * 10; // 每超过1小时，加收10块钱
+    }
+
+    // 从localStorage获取购买的食品数据
+    var buyFoodData = JSON.parse(localStorage.getItem('buyFood' + idIdx) || '[]');
+
+    // 计算商品总价，如果没有商品数据，则商品总价为0
+    var priceSum = buyFoodData.length > 0 ? getFoodSumPrice(buyFoodData) : 0;
+
+    // 准备要保存的数据对象
+    var checkoutData = {
+        endTime: new Date(), // 结束时间
+        duration: sub, // 使用时长
+        totalCost: subSumPrice + priceSum, // 总费用（时长费用 + 商品总价）
+        items: buyFoodData, // 购买的商品列表
+        roomId: roomId
+    };
+
+    // 显示总费用等信息
+    alert('耗时：' + haoShi() + '\n' +
+      '时长收费: ' + subSumPrice + '元\n' +
+      '商品总价：' + (priceSum === 0 ? '无购物' : priceSum + '元') + '\n\n' +
+      '总收费：' + checkoutData.totalCost + '元\n\n' +
+      '点击确认，进行结账！');
+
+    // 保存数据到文件
+    // saveDataToFile(checkoutData, 'checkoutData-' + idIdx + '.json');
+    saveDataToFile(checkoutData);
+
+    // 重置计时器和购买列表
+    localStorage.removeItem('startTime' + idIdx); // 使用removeItem来确保可以重复使用idIdx
+    setBuyFoodValueInLocalStorage(''); // 重置购物车数据
+    domEle('#end', 'none');
+    domEle('#start', 'block');
+    domEle('#food', 'none');
+    domEle('#foodIsBuy', 'block'); // 根据需要可能需要显示或隐藏
+
+    // 重置价格总计
+    priceSum = 0;
+
+// 发送消息给父页面，取消高亮
+    window.parent.postMessage({ action: 'highlight', id: idIdx }, '*');
+}
+
+// 辅助函数，计算商品总价
+function getFoodSumPrice(buyFoodData) {
+    var sum = buyFoodData.reduce(function(acc, item) {
+        return acc + (item.price * item.number);
+    }, 0);
+    return sum; // 确保返回计算的总价
+}
+
+// // 保存数据到文件的函数
+// function saveDataToFile(data, filename) {
+//     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+//     saveAs(blob, filename); // 使用FileSaver.js提供的方法保存文件
+//     // 记录文件名到localStorage
+//     localStorage.setItem('lastSavedFileName', filename);
+// }
+
+// 确保domEle函数定义正确，用于操作DOM元素的显示
+function domEle(selector, displayStyle) {
+    document.querySelector(selector).style.display = displayStyle;
+}
+      
+
+//购买
+function buy(foodName) {
+        var name = foodName
+        var price = getPriceByFoodName(name)
+        var number = 1
+        if (localStorage['buyFood' + idIdx]) {
+            const isBuyFoodList = JSON.parse(localStorage['buyFood' + idIdx])
+            const currentFood = isBuyFoodList.find(value => value.food === foodName)
+            if (currentFood) {
+                var oldNumber = currentFood.number
+                var newNumber = oldNumber + 1
+                var index = isBuyFoodList.findIndex(value => value.food === foodName)
+                isBuyFoodList[index].number = newNumber
+                setBuyFoodValueInLocalStorage(JSON.stringify(isBuyFoodList))
+                alert('购买' + name + '成功！')
+            } else {
+                isBuyFoodList.push({
+                    food: name,
+                    price: price,
+                    number: number
+                })
+                setBuyFoodValueInLocalStorage(JSON.stringify(isBuyFoodList))
+                alert('购买' + name + '成功！')
+            }
+        } else {
+            setBuyFoodValueInLocalStorage(JSON.stringify([{
+                food: name,
+                price: price,
+                number: number
+            }]))
+            alert('购买' + name + '成功！')
+        }
+    }
+
+    // 计算所有商品的总价并返回
+    function getFoodSumPrice() {
+    // 从localStorage获取商品列表，如果不存在则初始化为空数组
+    var list = JSON.parse(localStorage.getItem('buyFood' + idIdx) || '[]');
+
+    // 初始化总价为0
+    var priceSum = 0;
+
+    // 遍历商品列表计算总价
+    for (var i = 0; i < list.length; i++) {
+        var price = list[i].price;
+        var number = list[i].number;
+        priceSum += price * number;
+    }
+
+    // 返回计算的总价
+    return priceSum;
+}
+
+    // //计算所有商品的总价
+    // function getFoodSumPrice() {
+    //     var list = JSON.parse(localStorage['buyFood' + idIdx])
+    //     for (var i = 0; i < list.length; i++) {
+    //         var price = list[i].price
+    //         var number = list[i].number
+    //         priceSum = priceSum + price * number
+    //     }
+    // }
+
+    //抹零结账
+    function moling(start) {
+        
+        var startTime = localStorage.getItem('startTime' + idIdx);
+        var endDate = +new Date()
+        var sub = endDate - startTime; // 确保使用startTime
+        sub = Math.floor(sub / 1000) //把得出来的毫秒转为秒，并且向上取整
+        var subSumPrice = 10 //默认单价是60元/60
+    	if (sub > 3600 && sub <= 21600) {
+        var hour = Math.ceil((sub - 3600) / 3600); // 判断超出4小时多久，默认按小时收费
+        subSumPrice += hour * 10; // 每超过1小时，加收10块钱
+   	 } 
+
+	else if (sub > 21600) {
+        var hour = 5; // 最长6小时，相当于最长加5小时
+        subSumPrice += hour * 10; // 每超过1小时，加收10块钱
+  	}
+
+        // var subSumPrice = Math.ceil(sub * 0.0028) //假设每秒单价为0.0028元
+        if (localStorage['buyFood' + idIdx]) {
+            getFoodSumPrice()
+        }
+        haoShi()
+        var priceSum = getFoodSumPrice(JSON.parse(localStorage.getItem('buyFood' + idIdx) || '[]'));
+        var promotionPrice = priceSum - (priceSum % 10)
+        // var promotionPrice = Math.floor(priceSum); // 抹零
+        var buyFoodData = JSON.parse(localStorage.getItem('buyFood' + idIdx) || '[]');
+
+    // 准备要保存的数据对象
+    var checkoutData = {
+        endTime: new Date(), // 结束时间
+        duration: sub, // 使用时长
+        totalCost: promotionPrice, // 使用抹零后的价格
+        items: JSON.parse(localStorage.getItem('buyFood' + idIdx) || '[]') // 购买的商品列表
+    };
+
+    // // 显示总费用等信息
+    // alert('抹零成功！\n' +
+    //       '耗时：' + haoShi() + '\n' +
+    //       '时长收费: ' + subSumPrice + '元\n' +
+    //       '商品总价：' + priceSum + '元\n' +
+    //       '优惠后：' + promotionPrice + '元\n' +
+    //       '总收费：' + promotionPrice + '元\n' +
+    //       '点击确认，进行结账！');
+
+    // 显示总费用等信息
+    alert('抹零成功！\n' +
+          '耗时：' + haoShi() + '\n' +
+          '时长收费: ' + subSumPrice + '元\n' +
+          '商品总价：' + priceSum + '元\n' +
+          '总收费：' + (subSumPrice + priceSum) + '元\n\n' +
+          '优惠后：' + (subSumPrice + promotionPrice) + '元\n' +
+          '点击确认，进行结账！');
+
+    // 保存数据到文件
+    // saveDataToFile(checkoutData, 'molingCheckoutData-' + idIdx + '.json');
+    saveDataToFile(checkoutData);
+
+    // 重置计时器和购买列表
+    localStorage.removeItem('startTime' + idIdx);
+    setBuyFoodValueInLocalStorage(''); // 重置购物车数据
+    domEle('#end', 'none');
+    domEle('#start', 'block');
+    domEle('#food', 'none');
+    domEle('#foodIsBuy', 'none');
+    priceSum = 0;
+}
+
+
+    function shanchu() {
+        var name = prompt("请输入你要删除的商品名称:")
+        if (localStorage['buyFood' + idIdx]) {
+            var isBuyFoodList = JSON.parse(localStorage['buyFood' + idIdx])
+            var currentFood = isBuyFoodList.filter(v => v.food === name)
+            if (!currentFood.length || !('number' in currentFood[0])) {
+                alert('商品名称输入有误')
+                return false
+            }
+            if (1 === currentFood[0].number) { //判断这个商品里面是不是只有一个数量number
+                isBuyFoodList = isBuyFoodList.filter(v => v.food !== name)
+                alert('删除' + name + '成功。')
+            }
+            if (currentFood[0].number > 1) { //判断这个商品数量number是否大于1
+                isBuyFoodList = isBuyFoodList.map(v => (v.food === name ? v.number = v.number - 1 : v) && v)
+                alert('删除' + name + '成功。')
+            }
+            localStorage['buyFood' + idIdx] = JSON.stringify(isBuyFoodList)
+            setHtml(localStorage['buyFood' + idIdx])
+
+
+        } else {
+            alert('删除' + name + '失败')
+        }
+    }
+
+
+    //查询当前费用
+    function showMoney(start) {
+        var endDate = +new Date()
+        var sub = endDate - startTime; // 确保使用startTime
+        sub = Math.floor(sub / 1000) //把得出来的毫秒转为秒，并且向上取整
+        var subSumPrice = 10 //默认单价是10
+
+    	if (sub > 3600 && sub <= 21600) {
+        var hour = Math.ceil((sub - 3600) / 3600); // 判断超出1小时多久，默认按小时收费
+        subSumPrice += hour * 10; // 每超过1小时，加收10块钱
+   	 } 
+
+	else if (sub > 21600) {
+        var hour = 5; // 最长6小时，相当于最长加5小时
+        subSumPrice += hour * 10; // 每超过1小时，加收10块钱
+  	}
+
+        // var subSumPrice = Math.ceil(sub * 0.0028) //假设每秒单价为0.0028元
+        if (localStorage['buyFood' + idIdx]) {
+            getFoodSumPrice()
+            console.log('总钱是：' + priceSum);
+        }
+        haoShi()
+        // var sumPrice = subSumPrice + priceSum
+        var priceSum = getFoodSumPrice(JSON.parse(localStorage.getItem('buyFood' + idIdx) || '[]'));
+          // 显示总费用等信息
+        alert('耗时：' + haoShi() + '\n' +
+          '时长收费: ' + subSumPrice + '元\n' +
+          '商品总价：' + priceSum + '元\n\n' +
+          '总收费：' + (subSumPrice + priceSum) + '元\n\n' +
+          '如果需要直接结账请点击【结束计时】\n' +
+          '如果需要抹零结账请点击【抹零结账】');
+// }
+//         alert('耗时：' + haoShi() + '\n' + '时长收费:' + subSumPrice + '元\n' + '商品总价：' + priceSum + '元' + '\n\n\n\n' + '总收费：' + sumPrice + '元' + '\n' + '如果需要直接结账请点击【结束计时】' + '\n' + '如果需要抹零结账请点击【抹零结账】')
+            priceSum = 0
+        
+    }
+</script>
+
+</html>

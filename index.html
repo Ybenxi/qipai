@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+
+
+<!-- //记录保存 //抹零操作 -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="./indexStyle.css" rel='stylesheet' type="text/css" />
+    <title>超市系统</title>
+    <style>
+
+    </style>
+</head>
+
+<body id="body">
+    <div class="mainb ">
+        <div class="title">
+            <div class="nowtime">
+                <!-- <p><b>当前时间:</b></p> -->
+                <div id="d1"></div>
+            </div>
+            <div class="bg">
+                <p><b>切换背景图</b></p>
+                <button class="btn1 ">粉红沙滩</button>
+                <button class="btn2 ">纯白之恋</button>
+                <button class="btn3 ">灰白沙布</button>
+            </div>
+            <div class="map">
+                <p><b>选择房间</b></p>
+                
+                <a href="#east"><button class="room-btn " data-room-id="east">房间【东】</button></a>
+                <a href="#south"><button class="room-btn " data-room-id="south">房间【南】</button></a>
+                <a href="#west"><button class=" room-btn" data-room-id="west">房间【西】</button></a>
+                <a href="#north"><button class=" room-btn" data-room-id="north">房间【北】</button></a>
+                <!-- <button class=" " onclick="goTonorth()">房间【北】</button> -->
+                <a href="#central"><button class=" room-btn" data-room-id="central">房间【中】</button></a>
+                <a href="#send"><button class=" room-btn" data-room-id="send">房间【发】</button></a>
+                <a href="#white"><button class=" room-btn" data-room-id="white">房间【白】</button></a>
+
+                <div>
+                    <a href="#demo"><button class="room-btn" data-room-id="demo">房间【临时】</button></a>
+                    <button id="exportButton">导出数据</button>
+                    <button onclick="window.location.href='json.html';">查询数据</button>
+                    <button onclick="window.location.href='loacl.html';">清空缓存</button>
+                </div>
+                <!-- <button onclick="window.exportData()">导出数据</button> -->
+                <!-- <button class=" " onclick="goTowhite()">房间【白】</button> -->
+            </div>
+
+
+
+        </div>
+        <div class="iframecss">
+            <div class="zhanwei"></div>
+            <iframe src="context.html?id=1 " frameborder="0 " class="ccc " id="east"></iframe>
+            <iframe src="./context.html?id=2 " frameborder="0 " class="ccc " id="south"></iframe>
+            <iframe src="./context.html?id=3 " frameborder="0 " class="ccc " id="west"></iframe>
+            <iframe src="./context.html?id=4 " frameborder="0 " class="ccc " id="north"></iframe>
+            <iframe src="./context.html?id=5 " frameborder="0 " class="ccc " id="central"></iframe>
+            <iframe src="./context.html?id=6 " frameborder="0 " class="ccc " id="send"></iframe>
+            <iframe src="./context.html?id=7 " frameborder="0 " class="ccc " id="white"></iframe>
+            <iframe src="./context.html?id=8 " frameborder="0 " class="ccc " id="demo"></iframe>
+        </div>
+    </div>
+    <!-- <script type="text/javascript " src="../01/index.js "> -->
+    <script>
+        var divbtns = document.querySelector('.title')
+        var btn1 = document.querySelector('.btn1')
+        var btn2 = document.querySelector('.btn2')
+        var btn3 = document.querySelector('.btn3')
+        var main = document.querySelector('.mainb')
+        btn1.onclick = function() {
+            console.log('现在是粉色');
+            main.style.backgroundImage = 'url("pink.png")';
+        }
+
+        btn2.onclick = function() {
+            console.log('现在是白色');
+            main.style.backgroundImage = 'url("white.png")';
+        }
+
+        btn3.onclick = function() {
+            console.log('现在是灰色');
+            main.style.backgroundImage = 'url("black.png")';
+        }
+
+        var white = document.querySelector('#white')
+        var north = document.querySelector('#north')
+
+        function goTowhite() {
+            white.scrollIntoView()
+        }
+
+        function goTonorth() {
+            north.scrollIntoView()
+        }
+
+
+        // var d = document.querySelector('#btn1');
+        // var e = document.querySelector('#d1')
+        //     // d.onclick = function() {
+        //     //     e.innerText = getDate()
+        //     // }
+
+        function getDate() {
+            var date = new Date();
+            // 我们写一个 2019年 5月 1日 星期三
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1;
+            var dates = date.getDate();
+            var arr = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            var day = date.getDay();
+            return '今天是：' + year + '年' + month + '月' + dates + '日 ' + arr[day];
+        }
+
+        // e.innerText = getDate()
+    </script>
+
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="exportData.js"></script>
+
+<script>
+    // 处理iframe加载
+    var iframes = document.querySelectorAll('.ccc');
+    iframes.forEach(function(iframe) {
+        iframe.addEventListener('load', function() {
+            // 确保这里的id与context.html页面中的id匹配
+            var roomID = iframe.id;
+            // 假设context.html页面的start函数会在某个时间点被调用
+            // 并且会发送一个包含roomID的消息
+        });
+    });
+
+    // 监听来自iframe的消息
+    window.addEventListener('message', function(event) {
+        var data = event.data;
+        if (data.action === 'highlight') {
+            var button = document.querySelector('.room-btn[data-room-id="' + data.id + '"]');
+            if (button) {
+                toggleHighlight(button, true);
+            }
+        }
+    });
+
+    function toggleHighlight(button, highlight) {
+        if (highlight) {
+            button.classList.add('highlight');
+        } else {
+            button.classList.remove('highlight');
+        }
+    }
+</script>
+
+
+</body>
+
+</html>

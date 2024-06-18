@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JSON数据展示</title>
+    <style>
+        table, th, td {
+            border: 1px solid #ddd;
+            border-collapse: collapse;
+            padding: 8px;
+            text-align: left;
+        }
+        table {
+            width: 100%;
+            margin-top: 10px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>JSON数据展示</h1>
+    <div id="jsonViewer"></div>
+    <input type="file" id="jsonFileInput" />
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <script>
+    function jsonToWorksheet(data) {
+        var worksheet = XLSX.utils.json_to_sheet(data);
+        return worksheet;
+    }
+    function exportToExcel(data, filename) {
+    const worksheet = jsonToWorksheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, filename);
+    XLSX.writeFile(workbook, filename + '.xlsx');
+}
+    document.getElementById('jsonFileInput').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        displayData(data);
+                    } catch (error) {
+                        console.error('解析文件内容为JSON时出错:', error);
+                        document.getElementById('jsonViewer').innerText = '解析错误：' + error.message;
+                    }
+                };
+
+                reader.readAsText(file);
+            });
+
+    function displayData(data) {
+    const viewer = document.getElementById('jsonViewer');
+    viewer.innerHTML = ''; // 清空现有内容
+
+    // 创建表格并添加表头
+    const table = document.createElement('table');
+    createTableHeader(table, ['结束时间', '持续时间（秒）', '总花费', '房间名', '食品', '价格', '数量']);
+
+    // 遍历数据数组
+    data.forEach(record => {
+        // 为每个记录创建一个表格行
+        const row = table.insertRow();
+        
+        // 格式化并插入结束时间
+        const cellEndTime = row.insertCell();
+        cellEndTime.textContent = formatDate(record.endTime);
+
+        // 填充其他单元格数据
+        ['duration', 'totalCost', 'roomName'].forEach((key) => {
+            const cell = row.insertCell();
+            cell.textContent = record[key] || '无'; // 如果属性不存在，则显示'无'
+        });
+
+        // 处理items数组（如果存在）
+        if (record.items && Array.isArray(record.items)) {
+            record.items.forEach((item) => {
+                const cellFood = row.insertCell();
+                cellFood.textContent = item.food || '无';
+                const cellPrice = row.insertCell();
+                cellPrice.textContent = item.price || '无';
+                const cellNumber = row.insertCell();
+                cellNumber.textContent = item.number || '无';
+            });
+        }
+    });
+
+    viewer.appendChild(table);
+
+    const downloadBtn = document.createElement('button');
+    downloadBtn.textContent = '下载为Excel';
+    downloadBtn.onclick = function() {
+        exportToExcel(data, '数据导出'); // 导出数据并命名为'数据导出.xlsx'
+    };
+    viewer.appendChild(downloadBtn);
+}
+        // 修正后的createTableHeader函数
+        function createTableHeader(table, headers) {
+            const thead = table.createTHead();
+            const headerRow = thead.insertRow();
+            // 将英文列名映射为中文
+            const chineseHeaders = {
+                'endTime': '结束时间',
+                'duration': '持续时间（秒）',
+                'totalCost': '总花费',
+                'food': '食品',
+                'price': '价格',
+                'number': '数量',
+                'roomName':'房间名'
+            };
+            // 使用映射后的中文列名
+            headers.forEach(headerKey => {
+                const th = document.createElement('th');
+                th.textContent = chineseHeaders[headerKey] || headerKey; // 如果有对应的中文，使用中文，否则使用原列名
+                headerRow.appendChild(th);
+            });
+        }
+
+
+    function formatDate(isoString) {
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+    </script>
+</body>
+</html>

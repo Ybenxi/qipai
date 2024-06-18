@@ -1,0 +1,49 @@
+.mainb {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background-image: url("pink.jpg");
+}
+
+.ccc {
+    height: 600px;
+}
+
+.title {
+    border: 1px solid #999;
+    /* widows: 100px; */
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    background: rgb(255, 255, 255);
+}
+
+.iframecss {
+    display: flex;
+    flex-direction: column;
+}
+
+.zhanwei {
+    height: 80px;
+}
+
+.bg {
+    margin-right: 110px;
+    float: right;
+}
+
+.map {
+    /* display: flex;
+    justify-content: center;
+    align-items: center; */
+    /* margin-left: 250px; */
+    text-align: center;
+}
+
+        /* indexStyle.css */
+/* indexStyle.css */
+.highlight {
+    background-color: #f00; /* 例如，使用红色背景 */
+    color: #fff; /* 如果需要，改变文字颜色 */
+}

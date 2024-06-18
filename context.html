@@ -388,8 +388,6 @@
         showSubTime(localStorage['startTime' + idIdx])
         getSubTime()
         return d
-        var roomId = this.document.body.id; // 假设每个context.html的body有一个唯一的id
-        window.parent.postMessage({ action: 'highlight', id: idIdx }, '*');
     }
 
 // 结束计时按钮的逻辑
@@ -446,9 +444,6 @@ function end(start) {
 
     // 重置价格总计
     priceSum = 0;
-
-// 发送消息给父页面，取消高亮
-    window.parent.postMessage({ action: 'highlight', id: idIdx }, '*');
 }
 
 // 辅助函数，计算商品总价

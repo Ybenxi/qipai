@@ -32,17 +32,17 @@
             <div class="map">
                 <p><b>选择房间</b></p>
                 
-                <a href="#east"><button class="room-btn " data-room-id="east">房间【东】</button></a>
-                <a href="#south"><button class="room-btn " data-room-id="south">房间【南】</button></a>
-                <a href="#west"><button class=" room-btn" data-room-id="west">房间【西】</button></a>
-                <a href="#north"><button class=" room-btn" data-room-id="north">房间【北】</button></a>
+                <a href="#east"><button class=" ">房间【东】</button></a>
+                <a href="#south"><button class=" ">房间【南】</button></a>
+                <a href="#west"><button class=" ">房间【西】</button></a>
+                <a href="#north"><button class=" ">房间【北】</button></a>
                 <!-- <button class=" " onclick="goTonorth()">房间【北】</button> -->
-                <a href="#central"><button class=" room-btn" data-room-id="central">房间【中】</button></a>
-                <a href="#send"><button class=" room-btn" data-room-id="send">房间【发】</button></a>
-                <a href="#white"><button class=" room-btn" data-room-id="white">房间【白】</button></a>
+                <a href="#central"><button class=" ">房间【中】</button></a>
+                <a href="#send"><button class=" ">房间【发】</button></a>
+                <a href="#white"><button class=" ">房间【白】</button></a>
 
                 <div>
-                    <a href="#demo"><button class="room-btn" data-room-id="demo">房间【临时】</button></a>
+                    <a href="#demo"><button class=" ">房间【临时】</button></a>
                     <button id="exportButton">导出数据</button>
                     <button onclick="window.location.href='json.html';">查询数据</button>
                     <button onclick="window.location.href='loacl.html';">清空缓存</button>
@@ -122,39 +122,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 <script src="exportData.js"></script>
-
 <script>
-    // 处理iframe加载
-    var iframes = document.querySelectorAll('.ccc');
-    iframes.forEach(function(iframe) {
-        iframe.addEventListener('load', function() {
-            // 确保这里的id与context.html页面中的id匹配
-            var roomID = iframe.id;
-            // 假设context.html页面的start函数会在某个时间点被调用
-            // 并且会发送一个包含roomID的消息
-        });
+    document.addEventListener('DOMContentLoaded', (event) => {
+        document.getElementById('exportButton').addEventListener('click', window.exportData);
     });
-
-    // 监听来自iframe的消息
-    window.addEventListener('message', function(event) {
-        var data = event.data;
-        if (data.action === 'highlight') {
-            var button = document.querySelector('.room-btn[data-room-id="' + data.id + '"]');
-            if (button) {
-                toggleHighlight(button, true);
-            }
-        }
-    });
-
-    function toggleHighlight(button, highlight) {
-        if (highlight) {
-            button.classList.add('highlight');
-        } else {
-            button.classList.remove('highlight');
-        }
-    }
 </script>
-
 
 </body>
 
